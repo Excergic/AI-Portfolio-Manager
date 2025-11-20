@@ -1,31 +1,52 @@
 #!/usr/bin/env python
+from json import load
 import sys
+from typing_extensions import override
 import warnings
+from mf_portfolio_manager.crew import MutualFundCrew
+from dotenv import load_dotenv
 
-from datetime import datetime
-
-from mf_portfolio_manager.crew import MfPortfolioManager
+load_dotenv(override=True)
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
-# This main file is intended to be a way for you to run your
-# crew locally, so refrain from adding unnecessary logic into this file.
-# Replace with inputs you want to test with, it will automatically
-# interpolate any tasks and agents information
 
 def run():
     """
-    Run the crew.
+    Run the mutual fund crew with custom inputs
     """
     inputs = {
-        'topic': 'AI LLMs',
-        'current_year': str(datetime.now().year)
+        # Fund category selection
+        'fund_category': 'Large Cap',
+        'scheme_codes': '119551,120503',  # Optional: specific schemes
+        
+        # SIP calculation inputs
+        'scheme_code': '119551',  # Axis Bluechip Fund
+        'monthly_sip': 10000,
+        'investment_months': 60,
+        'holding_months': 60,
+        
+        # Lumpsum calculation inputs
+        'lumpsum_amount': 100000,
+        'purchase_nav': 45.50,
+        'current_nav': 68.75,
+        'holding_years': 3,
+        
+        # Investor profile
+        'risk_profile': 'Moderate',
+        'investment_horizon': 7,
+        'investment_type': 'SIP',
+        'monthly_budget': 15000,
+        'lumpsum_budget': 0,
+        'fund_categories': 'Large Cap, Mid Cap',
+        'investment_goal': 'Long-term wealth creation and retirement planning'
     }
     
-    try:
-        MfPortfolioManager().crew().kickoff(inputs=inputs)
-    except Exception as e:
-        raise Exception(f"An error occurred while running the crew: {e}")
+    result = MutualFundCrew().crew().kickoff(inputs=inputs)
+    print("\n\n========================")
+    print("## Investment Analysis Report")
+    print("========================\n")
+    print(result)
 
 
 def train():
@@ -33,36 +54,24 @@ def train():
     Train the crew for a given number of iterations.
     """
     inputs = {
-        "topic": "AI LLMs",
-        'current_year': str(datetime.now().year)
+        'fund_category': 'Large Cap',
+        'scheme_code': '119551',
+        'monthly_sip': 5000,
+        'investment_months': 36,
+        'holding_months': 36,
+        'risk_profile': 'Moderate',
+        'investment_horizon': 5,
+        'investment_type': 'SIP',
+        'monthly_budget': 10000,
+        'fund_categories': 'Large Cap'
     }
     try:
-        MfPortfolioManager().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
-
+        MutualFundCrew().crew().train(
+            n_iterations=int(sys.argv[1]),
+            inputs=inputs
+        )
     except Exception as e:
         raise Exception(f"An error occurred while training the crew: {e}")
 
-def replay():
-    """
-    Replay the crew execution from a specific task.
-    """
-    try:
-        MfPortfolioManager().crew().replay(task_id=sys.argv[1])
-
-    except Exception as e:
-        raise Exception(f"An error occurred while replaying the crew: {e}")
-
-def test():
-    """
-    Test the crew execution and returns the results.
-    """
-    inputs = {
-        "topic": "AI LLMs",
-        "current_year": str(datetime.now().year)
-    }
-    
-    try:
-        MfPortfolioManager().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
-
-    except Exception as e:
-        raise Exception(f"An error occurred while testing the crew: {e}")
+if __name__ == "__main__":
+    run()

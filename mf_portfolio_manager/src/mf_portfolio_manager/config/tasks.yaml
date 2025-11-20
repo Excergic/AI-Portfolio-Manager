@@ -1,17 +1,160 @@
-research_task:
+# Task 1: Data Collection Task
+collect_fund_data:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
+    Fetch detailed mutual fund data for the {fund_category} category.
+    
+    Requirements:
+    - Get top 10-15 funds in the specified category ({fund_category})
+    - Extract NAV (Net Asset Value) for each fund
+    - Get expense ratios if available
+    - Retrieve 1-year, 3-year, and 5-year returns
+    - Include fund house names and scheme codes
+    - Get scheme type (Growth/Dividend)
+    
+    If specific scheme codes are provided: {scheme_codes}, fetch detailed information
+    for those schemes including historical NAV data for the last 30 days.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+    A structured JSON or markdown table containing:
+    - Scheme name and code
+    - Current NAV and last updated date
+    - Fund house name
+    - Expense ratio
+    - Historical returns (1Y, 3Y, 5Y)
+    - Scheme category and type
+    
+    Format the data clearly for analysis by other agents.
+  agent: mf_data_researcher
 
-reporting_task:
+# Task 2: Calculate SIP Returns
+calculate_sip_returns:
   description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    Calculate comprehensive SIP (Systematic Investment Plan) returns for the following parameters:
+    
+    Investment Details:
+    - Scheme Code: {scheme_code}
+    - Monthly SIP Amount: ₹{monthly_sip}
+    - Investment Period: {investment_months} months
+    - Holding Period: {holding_months} months
+    
+    Calculations Required:
+    1. Total amount invested
+    2. Current value of investment
+    3. Absolute returns (in ₹ and %)
+    4. IRR (Internal Rate of Return) - annualized
+    5. Tax calculation:
+       - If holding < 12 months: STCG at 20%
+       - If holding >= 12 months: LTCG at 12.5% on gains above ₹1.25 lakh
+    6. Post-tax returns
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    A detailed returns report containing:
+    - Scheme name and code
+    - Total invested: ₹X
+    - Current value: ₹Y
+    - Absolute gain: ₹Z (W%)
+    - Annualized IRR: X%
+    - Tax breakdown (STCG/LTCG)
+    - Tax amount: ₹A
+    - Post-tax returns: ₹B (C%)
+    
+    Present in clear, investor-friendly format with all calculations shown.
+  agent: returns_calculator
+
+# Task 3: Calculate Lumpsum Returns
+calculate_lumpsum_returns:
+  description: >
+    Calculate comprehensive Lumpsum investment returns for the following parameters:
+    
+    Investment Details:
+    - Investment Amount: ₹{lumpsum_amount}
+    - Purchase NAV: {purchase_nav}
+    - Current NAV: {current_nav}
+    - Holding Period: {holding_years} years ({holding_months} months)
+    
+    Calculations Required:
+    1. Units purchased
+    2. Current value of investment
+    3. Absolute returns (in ₹ and %)
+    4. CAGR (Compound Annual Growth Rate)
+    5. Tax calculation:
+       - If holding < 12 months: STCG at 20%
+       - If holding >= 12 months: LTCG at 12.5% on gains above ₹1.25 lakh
+    6. Post-tax returns
+  expected_output: >
+    A detailed returns report containing:
+    - Investment amount: ₹X
+    - Units purchased: Y.ZZ
+    - Purchase NAV: ₹A / Current NAV: ₹B
+    - Current value: ₹C
+    - Absolute gain: ₹D (E%)
+    - CAGR: F%
+    - Tax type (STCG/LTCG)
+    - Tax amount: ₹G
+    - Post-tax returns: ₹H (I%)
+    
+    Present calculations step-by-step for investor understanding.
+  agent: returns_calculator
+
+# Task 4: Investment Advisory
+provide_investment_advice:
+  description: >
+    Based on the collected mutual fund data and return calculations, provide personalized
+    investment recommendations for an investor with the following profile:
+    
+    Investor Profile:
+    - Risk Profile: {risk_profile} (Conservative/Moderate/Aggressive)
+    - Investment Horizon: {investment_horizon} years
+    - Investment Type: {investment_type} (SIP/Lumpsum/Both)
+    - Monthly Budget (for SIP): ₹{monthly_budget}
+    - Lumpsum Amount (if applicable): ₹{lumpsum_budget}
+    - Preferred Categories: {fund_categories}
+    - Investment Goal: {investment_goal}
+    
+    Analysis Requirements:
+    1. Review the fund data collected by the data researcher
+    2. Consider the return calculations provided
+    3. Match funds to investor's risk profile and horizon
+    4. Create diversified portfolio allocation
+    5. Recommend 3-5 specific mutual funds with rationale
+    6. Provide allocation percentages
+    7. Estimate expected returns (realistic projections)
+    8. Highlight risks and mitigation strategies
+    9. Suggest rebalancing frequency
+    
+  expected_output: >
+    A comprehensive investment recommendation report containing:
+    
+    ## Portfolio Recommendation
+    
+    ### Recommended Funds:
+    1. [Fund Name] - [Category]
+       - Allocation: X%
+       - Rationale: [Why this fund fits the profile]
+       - Expected Returns: Y-Z% annually
+       - Risk Level: [Low/Medium/High]
+    
+    2. [Fund Name 2] - [Category]
+       ... (repeat for 3-5 funds)
+    
+    ### Investment Strategy:
+    - Total allocation breakdown by category
+    - Investment approach (SIP/Lumpsum schedule)
+    - Expected portfolio returns
+    - Risk assessment
+    
+    ### Action Items:
+    - Specific investment amounts for each fund
+    - When to invest
+    - Rebalancing recommendations
+    - Monitoring frequency
+    
+    ### Important Considerations:
+    - Tax implications
+    - Exit load details
+    - Market risks
+    
+    Present the report in clear, actionable language suitable for the investor.
+  agent: investment_advisor
+  context:
+    - collect_fund_data
+    - calculate_sip_returns
+    - calculate_lumpsum_returns

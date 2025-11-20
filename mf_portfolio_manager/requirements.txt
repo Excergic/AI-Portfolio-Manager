@@ -1,0 +1,13 @@
+ipykernel
+pandas
+numpy
+matplotlib
+mftool
+deprecated
+langchain
+langchain-openai
+yfinance
+langchain-core
+openai
+crewai
+python-dotenv
