@@ -50,7 +50,7 @@ class MutualFundCrew:
     def investment_advisor(self) -> Agent:
         return Agent(
             config = self.agents_config['investment_advisor'],
-            allow_delegation = True,
+            allow_delegation = False,
         )
 
     @task
@@ -66,7 +66,7 @@ class MutualFundCrew:
         )
 
     @task
-    def calculate_lumpsum_returns_task(self) -> Task:
+    def calculate_lumpsum_returns(self) -> Task:
         return Task(
             config=self.tasks_config['calculate_lumpsum_returns']
         )

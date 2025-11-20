@@ -1,6 +1,7 @@
 from crewai.tools import tool
+from datetime import datetime
 from mftool import Mftool
-from typing import Dict, List
+from typing import Dict, List, Sequence
 
 mf = Mftool()
 
@@ -99,14 +100,54 @@ def get_small_cap_funds() -> List[Dict]:
         return {"error": f"Failed to fetch small cap funds: {str(e)}"}
 
 
+def _monthly_irr(cash_flows: Sequence[float], tol: float = 1e-6, max_iter: int = 200) -> float:
+    """Compute the monthly IRR for evenly spaced cash flows using bisection."""
+
+    def npv(rate: float) -> float:
+        total = 0.0
+        factor = 1.0
+        for cf in cash_flows:
+            total += cf / factor
+            factor *= (1 + rate)
+        return total
+
+    low, high = -0.9999, 1.0
+    npv_low = npv(low)
+    npv_high = npv(high)
+
+    # Expand the upper bound until we bracket the root or hit a ceiling.
+    expansion_steps = 0
+    while npv_low * npv_high > 0 and expansion_steps < 10:
+        high += 1.0
+        npv_high = npv(high)
+        expansion_steps += 1
+
+    if npv_low * npv_high > 0:
+        # Fallback: IRR cannot be determined with current cash flows.
+        return 0.0
+
+    for _ in range(max_iter):
+        rate = (low + high) / 2
+        npv_mid = npv(rate)
+        if abs(npv_mid) < tol:
+            return rate
+        if npv_low * npv_mid < 0:
+            high = rate
+            npv_high = npv_mid
+        else:
+            low = rate
+            npv_low = npv_mid
+    return rate
+
+
 @tool("Calculate SIP Returns")
 def calculate_sip_returns(
     scheme_code: str,
     monthly_sip: float,
-    investment_months: int
+    investment_months: int,
 ) -> Dict:
     """
-    Calculate SIP returns with IRR for a mutual fund scheme.
+    Calculate SIP returns manually using historical NAV data.
     
     Args:
         scheme_code: The AMFI scheme code
@@ -117,22 +158,66 @@ def calculate_sip_returns(
         Dictionary with SIP returns data including IRR
     """
     try:
-        returns = mf.calculate_returns(
-            code=scheme_code,
-            monthly_sip=monthly_sip,
-            investment_in_months=investment_months
+        history = mf.get_scheme_historical_nav(scheme_code)
+        scheme_name = history.get('scheme_name')
+        raw_entries = history.get('data', [])
+        if not raw_entries:
+            return {"error": "No historical NAV data available for SIP calculation."}
+
+        chronological_entries = sorted(
+            raw_entries,
+            key=lambda x: datetime.strptime(x['date'], "%d-%m-%Y")
         )
+
+        # Group NAVs by month (YYYY-MM) ensuring we capture the latest NAV per month.
+        monthly_navs = {}
+        for record in chronological_entries:
+            month_key = datetime.strptime(record['date'], "%d-%m-%Y").strftime("%Y-%m")
+            monthly_navs[month_key] = float(record['nav'])
+
+        if len(monthly_navs) < investment_months:
+            return {
+                "error": (
+                    f"Only {len(monthly_navs)} months of NAV data available; "
+                    f"{investment_months} required for SIP calculation."
+                )
+            }
+
+        # Use the most recent investment_months entries for SIP computation.
+        selected_months = list(monthly_navs.items())[-investment_months:]
+
+        total_units = 0.0
+        cash_flows = []
+        for _, nav in selected_months:
+            units = monthly_sip / nav
+            total_units += units
+            cash_flows.append(-monthly_sip)
+
+        current_nav = float(chronological_entries[-1]['nav'])
+        current_value = total_units * current_nav
+        cash_flows.append(current_value)
+
+        total_invested = monthly_sip * investment_months
+        absolute_gain = current_value - total_invested
+        absolute_return_pct = (absolute_gain / total_invested) * 100 if total_invested else 0.0
+
+        monthly_irr = _monthly_irr(cash_flows)
+        irr_annualized = ((1 + monthly_irr) ** 12 - 1) * 100 if monthly_irr is not None else None
+
         return {
-            "scheme_code": returns.get('scheme_code'),
-            "scheme_name": returns.get('scheme_name'),
-            "current_nav": returns.get('nav'),
-            "total_invested": monthly_sip * investment_months,
-            "final_value": returns.get('final_investment_value'),
-            "absolute_return": returns.get('absolute_return'),
-            "irr_annualized": returns.get('IRR_annualised_return')
+            "scheme_code": scheme_code,
+            "scheme_name": scheme_name,
+            "current_nav": current_nav,
+            "months_considered": investment_months,
+            "total_invested": round(total_invested, 2),
+            "units_accumulated": round(total_units, 3),
+            "current_value": round(current_value, 2),
+            "absolute_gain": round(absolute_gain, 2),
+            "absolute_return_pct": round(absolute_return_pct, 2),
+            "irr_annualized_pct": round(irr_annualized, 2) if irr_annualized is not None else None,
         }
     except Exception as e:
-        return {"error": f"Failed to calculate SIP returns: {str(e)}"}
+        return {"error": f"Failed to calculate SIP returns manually: {str(e)}"}
 
 
 @tool("Calculate Lumpsum Returns")

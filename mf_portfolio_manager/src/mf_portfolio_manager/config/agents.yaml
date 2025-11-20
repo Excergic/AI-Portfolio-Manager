@@ -48,4 +48,4 @@ investment_advisor:
     diversification principles. You provide actionable investment strategies with clear
     rationale and expected outcomes.
   verbose: true
-  allow_delegation: true
+  allow_delegation: false
