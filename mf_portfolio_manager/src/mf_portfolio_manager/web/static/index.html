@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mutual Fund Portfolio Manager</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Mutual Fund Portfolio Manager</h1>
+      <p>Chat with your CrewAI agents and review tracked runs.</p>
+    </header>
+    <main>
+      <section class="panel form-panel">
+        <form id="chat-form">
+          <label>
+            Message / Investment Goal
+            <textarea id="message" name="message" rows="3" required>Need a SIP-focused portfolio for retirement planning.</textarea>
+          </label>
+          <div class="grid">
+            <label>
+              Fund Category
+              <input type="text" name="fund_category" value="Large Cap" />
+            </label>
+            <label>
+              Scheme Codes
+              <input type="text" name="scheme_codes" value="119551,120503" />
+            </label>
+            <label>
+              Monthly SIP (₹)
+              <input type="number" name="monthly_sip" value="10000" min="1000" step="500" />
+            </label>
+            <label>
+              SIP Months
+              <input type="number" name="investment_months" value="60" min="1" />
+            </label>
+            <label>
+              Holding Months
+              <input type="number" name="holding_months" value="60" min="1" />
+            </label>
+            <label>
+              Lumpsum Amount (₹)
+              <input type="number" name="lumpsum_amount" value="100000" min="0" step="5000" />
+            </label>
+            <label>
+              Purchase NAV
+              <input type="number" name="purchase_nav" value="45.5" step="0.01" />
+            </label>
+            <label>
+              Current NAV
+              <input type="number" name="current_nav" value="68.75" step="0.01" />
+            </label>
+            <label>
+              Holding Years
+              <input type="number" name="holding_years" value="3" min="1" />
+            </label>
+            <label>
+              Risk Profile
+              <select name="risk_profile">
+                <option value="Conservative">Conservative</option>
+                <option value="Moderate" selected>Moderate</option>
+                <option value="Aggressive">Aggressive</option>
+              </select>
+            </label>
+            <label>
+              Investment Horizon (years)
+              <input type="number" name="investment_horizon" value="7" min="1" />
+            </label>
+            <label>
+              Investment Type
+              <select name="investment_type">
+                <option value="SIP" selected>SIP</option>
+                <option value="Lumpsum">Lumpsum</option>
+                <option value="Both">Both</option>
+              </select>
+            </label>
+            <label>
+              Monthly Budget (₹)
+              <input type="number" name="monthly_budget" value="15000" min="1000" step="500" />
+            </label>
+            <label>
+              Lumpsum Budget (₹)
+              <input type="number" name="lumpsum_budget" value="0" min="0" step="5000" />
+            </label>
+            <label>
+              Preferred Categories
+              <input type="text" name="fund_categories" value="Large Cap, Mid Cap" />
+            </label>
+          </div>
+          <button type="submit">Send</button>
+          <p class="hint">
+            Every run is traced through CrewAI Tracking. Check <a href="https://app.crewai.com" target="_blank">CrewAI AMP</a>
+            for execution details.
+          </p>
+        </form>
+      </section>
+      <section class="panel chat-panel">
+        <div id="chat-log"></div>
+      </section>
+    </main>
+    <template id="message-template">
+      <div class="message">
+        <div class="meta"></div>
+        <div class="content"></div>
+      </div>
+    </template>
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>
+

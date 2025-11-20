@@ -39,6 +39,35 @@ This command initializes the mf-portfolio-manager Crew, assembling the agents an
 
 This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
 
+## Chat UI
+
+You can interact with the crew through a lightweight web chat that wraps the same kickoff flow:
+
+1. Install the dependencies (from this folder):
+   ```bash
+   uv sync
+   ```
+2. Start the API + static site:
+   ```bash
+   uv run uvicorn mf_portfolio_manager.web.server:app --reload
+   ```
+3. Open [http://localhost:8000](http://localhost:8000) and send prompts. All form fields map directly to the crew input variables so you can tweak budgets, risk profile, and other parameters per run.
+
+## CrewAI Tracking
+
+Every API call executed through the chat (or CLI) is traced via CrewAI’s native tracking system.
+
+1. Log into CrewAI AMP and grab your API key:
+   ```bash
+   crewai login
+   ```
+2. Set the key and toggle tracking (already enabled by default) before running the UI or CLI:
+   ```bash
+   export CREWAI_API_KEY="sk-..."
+   export CREWAI_ENABLE_TRACKING=true
+   ```
+3. Execute the crew (via `crewai run` or the chat UI). Each run now appears inside [https://app.crewai.com](https://app.crewai.com) with tool invocations, prompts, and responses for auditing purposes.
+
 ## Understanding Your Crew
 
 The mf-portfolio-manager Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.

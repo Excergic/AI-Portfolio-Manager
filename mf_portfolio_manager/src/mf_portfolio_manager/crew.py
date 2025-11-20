@@ -1,6 +1,6 @@
+import os
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
-from typing import List
 
 from mf_portfolio_manager.tools.custom_tool import (
     get_scheme_details,
@@ -12,6 +12,9 @@ from mf_portfolio_manager.tools.custom_tool import (
     calculate_lumpsum_returns,
     calculate_capital_gains_tax
 )
+
+TRACING_ENABLED = os.getenv("CREWAI_ENABLE_TRACKING", "true").lower() == "true"
+
 
 @CrewBase
 class MutualFundCrew:
@@ -86,4 +89,5 @@ class MutualFundCrew:
             tasks=self.tasks, 
             process=Process.sequential,
             verbose=True,
+            tracing=TRACING_ENABLED,
         )

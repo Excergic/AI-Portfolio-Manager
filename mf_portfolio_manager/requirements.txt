@@ -11,3 +11,5 @@ langchain-core
 openai
 crewai
 python-dotenv
+fastapi
+uvicorn[standard]
